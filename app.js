@@ -18,3 +18,12 @@ app.use("/", mainRouter);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// Authorization
+
+app.use((req, res, next) => {
+  req.user = {
+    _id: "6784732c27c310b8bc73eccb",
+  };
+  next();
+});

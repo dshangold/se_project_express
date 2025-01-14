@@ -39,7 +39,8 @@ const getUser = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFound") {
         return res.status(NOT_FOUND).send({ message: err.message });
-      } else if (err.name === "Cast Error") {
+      }
+      if (err.name === "Cast Error") {
         return res.status(BAD_REQUEST).send({ message: err.message });
       }
       return res.status(DEFAULT).send({ message: err.message });

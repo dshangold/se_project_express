@@ -1,5 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/errors");
+const { BAD_REQUEST, DEFAULT } = require("../utils/errors");
 
 const createClothingItem = (req, res) => {
   console.log(req);
@@ -45,7 +45,7 @@ const deleteClothingItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({}))
+    .then(() => res.status(204).send({}))
     .catch((err) => {
       res
         .status(DEFAULT)
@@ -68,9 +68,9 @@ const likeItem = (req, res) => {
       }
       return res.status(200).send(updatedItems);
     })
-    .catch((err) => {
-      return res.send(DEFAULT).send({ message: "Invalid item ID" });
-    });
+    .catch((err) =>
+      res.send(DEFAULT).send({ message: "Invalid item ID" }, err)
+    );
 };
 
 const dislikeItem = (req, res) => {
@@ -88,9 +88,9 @@ const dislikeItem = (req, res) => {
       }
       return res.status(200).send(updatedItems);
     })
-    .catch((err) => {
-      return res.send(DEFAULT).send({ message: "Invalid item ID" });
-    });
+    .catch((err) =>
+      res.send(DEFAULT).send({ message: "Invalid item ID" }, err)
+    );
 };
 
 module.exports = {

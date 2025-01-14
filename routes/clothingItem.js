@@ -9,17 +9,17 @@ const {
   dislikeItem,
 } = require("../controllers/clothingItem");
 
-//Create
+// Create //
 router.post("/", createClothingItem);
-//Read
+// Read //
 router.get("/", getAllClothingItems);
-//Update
+// Update //
 router.put("/:itemId", updateClothingItem);
-//Delete
+// Delete //
 router.delete("/:itemId", deleteClothingItem);
-//Like
+// Like //
 router.put("/:itemId/likes", likeItem);
-//Dislike
+// Dislike //
 router.delete("/:itemId/likes", dislikeItem);
 
 module.exports = router;
