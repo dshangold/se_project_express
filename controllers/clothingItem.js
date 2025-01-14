@@ -48,9 +48,51 @@ const deleteClothingItem = (req, res) => {
     });
 };
 
+const likeItem = (req, res) => {
+  const userId = req.user._id;
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndDelete(
+    itemId,
+    { $addToSet: { likes: userId } },
+    { new: true }
+  )
+    .then((updatedItems) => {
+      if (!updatedItems) {
+        return res.status(400).send({ message: "Item Not Found" });
+      }
+      return res.status(200).send(updatedItems);
+    })
+    .catch((err) => {
+      return res.send(500).send({ message: "Invalid item ID" });
+    });
+};
+
+const dislikeItem = (req, res) => {
+  const userId = req.user._id;
+  const { itemId } = req.params;
+
+  ClothingItem.findByIdAndDelete(
+    itemId,
+    { $pull: { likes: userId } },
+    { new: true }
+  )
+    .then((updatedItems) => {
+      if (!updatedItems) {
+        return res.status(400).send({ message: "Item Not Found" });
+      }
+      return res.status(200).send(updatedItems);
+    })
+    .catch((err) => {
+      return res.send(500).send({ message: "Invalid item ID" });
+    });
+};
+
 module.exports = {
   createClothingItem,
   getAllClothingItems,
   updateClothingItem,
   deleteClothingItem,
+  likeItem,
+  dislikeItem,
 };
