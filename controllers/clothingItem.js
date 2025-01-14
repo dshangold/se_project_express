@@ -1,5 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, SERVER_ERROR } = require("../utils/errors");
+const { BAD_REQUEST, SERVER_ERROR, NOT_FOUND } = require("../utils/errors");
 
 const createClothingItem = (req, res) => {
   console.log(req.user._id);
