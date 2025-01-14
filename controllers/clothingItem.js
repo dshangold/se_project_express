@@ -1,19 +1,31 @@
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, DEFAULT } = require("../utils/errors");
+const { BAD_REQUEST, SERVER_ERROR } = require("../utils/errors");
 
 const createClothingItem = (req, res) => {
+  console.log(req.user._id);
   console.log(req);
   console.log(req.body);
 
   const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       console.log(item);
-      res.send({ data: item });
+      res.status(200).send({ data: item });
     })
     .catch((err) => {
-      res.status(DEFAULT).send({ message: "Error from createItem", err });
+      console.error(err);
+      if (err.name === "ValidationError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Error creating item", err });
+      }
+      if (err.name === "CastError") {
+        return res
+          .status(NOT_FOUND)
+          .send({ message: "Error creating item", err });
+      }
+      return res.status(SERVER_ERROR).send({ message: "Error from item", err });
     });
 };
 
@@ -21,7 +33,10 @@ const getAllClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      res.status(DEFAULT).send({ message: "Error from getItems", err });
+      console.error(err);
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "Error from getItems", err });
     });
 };
 
@@ -33,8 +48,9 @@ const updateClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
+      console.error(err);
       res
-        .status(DEFAULT)
+        .status(SERVER_ERROR)
         .send({ message: "Error from updateClothingItem", err });
     });
 };
@@ -47,13 +63,19 @@ const deleteClothingItem = (req, res) => {
     .orFail()
     .then(() => res.status(204).send({}))
     .catch((err) => {
-      res
-        .status(DEFAULT)
-        .send({ message: "Error from deleteClothingItem", err });
+      console.error(err);
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Error deleting item", err });
+      }
+      return res
+        .status(NOT_FOUND)
+        .send({ message: "Error deleting item", err });
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
 
@@ -68,12 +90,15 @@ const likeItem = (req, res) => {
       }
       return res.status(200).send(updatedItems);
     })
-    .catch((err) =>
-      res.send(DEFAULT).send({ message: "Invalid item ID" }, err)
-    );
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      return next(err);
+    });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
 
@@ -88,9 +113,12 @@ const dislikeItem = (req, res) => {
       }
       return res.status(200).send(updatedItems);
     })
-    .catch((err) =>
-      res.send(DEFAULT).send({ message: "Invalid item ID" }, err)
-    );
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      return next(err);
+    });
 };
 
 module.exports = {
