@@ -1,4 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
+const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/errors");
 
 const createClothingItem = (req, res) => {
   console.log(req);
@@ -12,7 +13,7 @@ const createClothingItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error from createItem", err });
+      res.status(DEFAULT).send({ message: "Error from createItem", err });
     });
 };
 
@@ -20,7 +21,7 @@ const getAllClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
-      res.status(500).send({ message: "Error from getItems", err });
+      res.status(DEFAULT).send({ message: "Error from getItems", err });
     });
 };
 
@@ -32,7 +33,9 @@ const updateClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      res.status(500).send({ message: "Error from updateClothingItem", err });
+      res
+        .status(DEFAULT)
+        .send({ message: "Error from updateClothingItem", err });
     });
 };
 
@@ -44,7 +47,9 @@ const deleteClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.status(204).send({}))
     .catch((err) => {
-      res.status(500).send({ message: "Error from deleteClothingItem", err });
+      res
+        .status(DEFAULT)
+        .send({ message: "Error from deleteClothingItem", err });
     });
 };
 
@@ -59,12 +64,12 @@ const likeItem = (req, res) => {
   )
     .then((updatedItems) => {
       if (!updatedItems) {
-        return res.status(400).send({ message: "Item Not Found" });
+        return res.status(BAD_REQUEST).send({ message: "Item Not Found" });
       }
       return res.status(200).send(updatedItems);
     })
     .catch((err) => {
-      return res.send(500).send({ message: "Invalid item ID" });
+      return res.send(DEFAULT).send({ message: "Invalid item ID" });
     });
 };
 
@@ -79,12 +84,12 @@ const dislikeItem = (req, res) => {
   )
     .then((updatedItems) => {
       if (!updatedItems) {
-        return res.status(400).send({ message: "Item Not Found" });
+        return res.status(BAD_REQUEST).send({ message: "Item Not Found" });
       }
       return res.status(200).send(updatedItems);
     })
     .catch((err) => {
-      return res.send(500).send({ message: "Invalid item ID" });
+      return res.send(DEFAULT).send({ message: "Invalid item ID" });
     });
 };
 
