@@ -17,16 +17,9 @@ const createClothingItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Error creating item", err });
+        return res.status(BAD_REQUEST).send({ message: "Error creating item" });
       }
-      if (err.name === "CastError") {
-        return res
-          .status(NOT_FOUND)
-          .send({ message: "Error creating item", err });
-      }
-      return res.status(SERVER_ERROR).send({ message: "Error from item", err });
+      return res.status(SERVER_ERROR).send({ message: "Error from item" });
     });
 };
 
@@ -35,26 +28,24 @@ const getAllClothingItems = (req, res) => {
     .then((items) => res.status(200).send({ data: items }))
     .catch((err) => {
       console.error(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "Error from getItems", err });
+      return res.status(SERVER_ERROR).send({ message: "Error from getItems" });
     });
 };
 
-const updateClothingItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
+// const updateClothingItem = (req, res) => {
+//   const { itemId } = req.params;
+//   const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "Error from updateClothingItem", err });
-    });
-};
+//   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
+//     .orFail()
+//     .then((item) => res.status(200).send({ data: item }))
+//     .catch((err) => {
+//       console.error(err);
+//       return res
+//         .status(SERVER_ERROR)
+//         .send({ message: "Error from updateClothingItem", err });
+//     });
+// };
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
@@ -66,17 +57,18 @@ const deleteClothingItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Error deleting item", err });
+        return res.status(BAD_REQUEST).send({ message: "Error deleting item" });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "Invalid Id" });
       }
       return res
-        .status(NOT_FOUND)
-        .send({ message: "Error deleting item", err });
+        .status(SERVER_ERROR)
+        .send({ message: "Error from deleteClothingItem" });
     });
 };
 
-const likeItem = (req, res, next) => {
+const likeItem = (req, res) => {
   const userId = req.user._id;
   const { itemId } = req.params;
 
@@ -99,12 +91,11 @@ const likeItem = (req, res, next) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "Invalid Id" });
       }
-
-      return next(err);
+      return res.status(SERVER_ERROR).send({ message: "Error from likeItem" });
     });
 };
 
-const dislikeItem = (req, res, next) => {
+const dislikeItem = (req, res) => {
   const userId = req.user._id;
   const { itemId } = req.params;
 
@@ -127,14 +118,16 @@ const dislikeItem = (req, res, next) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "Invalid Id" });
       }
-      return next(err);
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "Error from deleteItem" });
     });
 };
 
 module.exports = {
   createClothingItem,
   getAllClothingItems,
-  updateClothingItem,
+  // updateClothingItem,
   deleteClothingItem,
   likeItem,
   dislikeItem,
