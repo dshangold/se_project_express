@@ -100,12 +100,7 @@ const likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((updatedItems) => {
-      if (!updatedItems) {
-        return res.status(BAD_REQUEST).send({ message: "Item Not Found" });
-      }
-      return res.status(200).send(updatedItems);
-    })
+    .then((updatedItems) => res.status(200).send(updatedItems))
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
@@ -127,12 +122,7 @@ const dislikeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((updatedItems) => {
-      if (!updatedItems) {
-        return res.status(NOT_FOUND).send({ message: "Item Not Found" });
-      }
-      return res.status(200).send(updatedItems);
-    })
+    .then((updatedItems) => res.status(200).send(updatedItems))
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });

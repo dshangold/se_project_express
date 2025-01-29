@@ -10,19 +10,6 @@ const {
   CONFLICT,
 } = require("../utils/errors");
 
-// GET USERS //
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
-
 // CREATE USERS //
 
 const createUser = (req, res) => {
@@ -123,7 +110,9 @@ const updateCurrentUser = (req, res) => {
     .orFail(new Error("Not Found"))
     .then((user) => res.send({ name: user.name, avatar: user.avatar }))
     .catch((err) => {
-      console.error(err);
+      if (err.name === "Not Found") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
       if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST)
@@ -143,5 +132,4 @@ module.exports = {
   getCurrentUser,
   login,
   updateCurrentUser,
-  getUsers,
 };
