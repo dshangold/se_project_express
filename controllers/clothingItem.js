@@ -1,9 +1,14 @@
 const ClothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, SERVER_ERROR, NOT_FOUND } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  SERVER_ERROR,
+  NOT_FOUND,
+  FORBIDDEN,
+} = require("../utils/errors");
 
 const createClothingItem = (req, res) => {
   console.log(req);
-  console.log(req.body);
+  console.log(">>>>>>>>>>>>>>>>>..", req.user);
 
   const { name, weather, imageUrl } = req.body;
 

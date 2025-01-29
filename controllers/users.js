@@ -7,38 +7,43 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
   UNAUTHORIZED,
+  CONFLICT,
 } = require("../utils/errors");
 
 // GET USERS //
 
-// const getUsers = (req, res) => {
-//   User.find({})
-//     .then((users) => res.send(users))
-//     .catch((err) => {
-//       console.error(err);
-//       return res
-//         .status(SERVER_ERROR)
-//         .send({ message: "An error has occurred on the server" });
-//     });
-// };
+const getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.send(users))
+    .catch((err) => {
+      console.error(err);
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
 
 // CREATE USERS //
 
 const createUser = (req, res) => {
   const { password, name, avatar, email } = req.body;
 
+  // User.findOne({ email }).then((user) => {
+  //   if (user) {
+  //     return res.status(CONFLICT).send({ message: "email already exists" });
+  //   } else
   bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
       User.create({ name, avatar, email, password: hashedPassword })
     )
     .then((user) => {
-      const userData = { name, avatar, email, passowrd, _id: user._id };
+      const userData = { name, avatar, email, _id: user._id };
       res.status(201).send(userData);
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.status(11000).send({ message: "Email already exists" });
+        return res.status(CONFLICT).send({ message: "Email already exists" });
       }
       if ((err.name = "ValidationError")) {
         return res
@@ -49,6 +54,7 @@ const createUser = (req, res) => {
         .status(SERVER_ERROR)
         .send({ message: "An error occurred on the server" });
     });
+  // });
 };
 // LOGIN //
 
@@ -114,36 +120,25 @@ const getCurrentUser = (req, res) => {
 
 const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
-  const { _id } = req.user;
-
-  User.findByIdAndUpdate(_id),
+  User.findByIdAndUpdate(
+    req.user._id,
     { name, avatar },
     { new: true, runValidators: true }
-      .orFail(() => {
-        throw new Error("DocumentNotFoundError");
-      })
-      .then((user) => {
-        res.send({
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        if (err.name === "DocumentNotFoundError") {
-          return res.status(NOT_FOUND).send({ message: "User not found" });
-        }
-        if (err.name === "ValidationError") {
-          return res
-            .status(BAD_REQUEST)
-            .send({ message: "Invalid info provided" });
-        }
-        return res
-          .status(SERVER_ERROR)
-          .send({ message: "An error occured on the server" });
-      });
+  )
+    .orFail(new Error("Not Found"))
+    .then((user) => res.send({ name: user.name, avatar: user.avatar }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "ValidationError") {
+        return res.status(invalidData).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(invalidData).send({ message: "Invalid ID" });
+      }
+      return res
+        .status(serverError)
+        .send({ message: "An error has occurred on the server" });
+    });
 };
 
 module.exports = {
@@ -151,4 +146,5 @@ module.exports = {
   getCurrentUser,
   login,
   updateCurrentUser,
+  getUsers,
 };
