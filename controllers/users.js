@@ -28,10 +28,6 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { password, name, avatar, email } = req.body;
 
-  // User.findOne({ email }).then((user) => {
-  //   if (user) {
-  //     return res.status(CONFLICT).send({ message: "email already exists" });
-  //   } else
   bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
@@ -45,7 +41,7 @@ const createUser = (req, res) => {
       if (err.code === 11000) {
         return res.status(CONFLICT).send({ message: "Email already exists" });
       }
-      if ((err.name = "ValidationError")) {
+      if (err.name === "ValidationError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid Data provided" });
@@ -54,7 +50,6 @@ const createUser = (req, res) => {
         .status(SERVER_ERROR)
         .send({ message: "An error occurred on the server" });
     });
-  // });
 };
 // LOGIN //
 
@@ -130,13 +125,15 @@ const updateCurrentUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(invalidData).send({ message: err.message });
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Invalid Data provided" });
       }
       if (err.name === "CastError") {
-        return res.status(invalidData).send({ message: "Invalid ID" });
+        return res.status(BAD_REQUEST).send({ message: "Error updating user" });
       }
       return res
-        .status(serverError)
+        .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server" });
     });
 };

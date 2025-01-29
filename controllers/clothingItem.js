@@ -8,7 +8,6 @@ const {
 
 const createClothingItem = (req, res) => {
   console.log(req);
-  console.log(">>>>>>>>>>>>>>>>>..", req.user);
 
   const { name, weather, imageUrl } = req.body;
 
@@ -54,15 +53,31 @@ const getAllClothingItems = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
+  const userId = req.user._id;
 
   console.log(itemId);
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
-    .then(() =>
-      res.status(FORBIDDEN).send({ message: "Item delete successful" })
-    )
+    .then((item) => {
+      if (!item.owner.equals(userId)) {
+        res
+          .status(FORBIDDEN)
+          .send({ message: "Not authorized to delete card" });
+      } else {
+        ClothingItem.deleteOne(item)
+          .then(() =>
+            res.status(200).send({ message: "Item deleted successfully" })
+          )
+          .catch((err) => {
+            console.error(err);
+            return res
+              .status(SERVER_ERROR)
+              .send({ message: "Error from server" });
+          });
+      }
+    })
     .catch((err) => {
-      console.error(err);
+      // console.error(err);
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Error deleting item" });
       }
