@@ -2,12 +2,12 @@ const BadRequestError = require("../errors/badrequest");
 const ForbiddenError = require("../errors/forbidden");
 const NotFoundError = require("../errors/notfound");
 const ClothingItem = require("../models/clothingItem");
-const {
-  BAD_REQUEST,
-  SERVER_ERROR,
-  NOT_FOUND,
-  FORBIDDEN,
-} = require("../utils/errors");
+// const {
+//   BAD_REQUEST,
+//   SERVER_ERROR,
+//   NOT_FOUND,
+//   FORBIDDEN,
+// } = require("../utils/errors");
 
 const createClothingItem = (req, res, next) => {
   console.log(req);
@@ -46,42 +46,27 @@ const deleteClothingItem = (req, res, next) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
-  console.log(itemId);
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (!item.owner.equals(userId)) {
         return next(
-          new ForbiddenError("Not allowed to delete another users item")
-        ).send({ message: "Not authorized to delete card" });
-      } else {
-        ClothingItem.deleteOne(item)
-          .then(() =>
-            res.status(200).send({ message: "Item deleted successfully" })
-          )
-          .catch((err) => {
-            console.error(err);
-            return next(err);
-            // return res
-            //   .status(SERVER_ERROR)
-            //   .send({ message: "Error from server" });
-          });
+          new ForbiddenError("Not allowed to delete another user's item")
+        );
       }
+
+      return ClothingItem.deleteOne({ _id: item._id }).then(() =>
+        res.status(200).send({ message: "Item deleted successfully" })
+      );
     })
     .catch((err) => {
-      // console.error(err);
       if (err.name === "CastError") {
         return next(new BadRequestError("Error deleting item"));
-        // return res.status(BAD_REQUEST).send({ message: "Error deleting item" });
       }
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("Invalid ID"));
-        // return res.status(NOT_FOUND).send({ message: "Invalid Id" });
       }
       return next(err);
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "Error from deleteClothingItem" });
     });
 };
 
