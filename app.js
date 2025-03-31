@@ -5,6 +5,7 @@ const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 const { errors } = require("celebrate");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+require("dotenv").config();
 
 const app = express();
 const { PORT = 3001 } = process.env;
